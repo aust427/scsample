@@ -56,46 +56,59 @@ def load_snap_objects(base_path, snap_num, subvolumes, group, fields=None):
     :param fields: list of fields to query
     :return:
     """
+
+    if type(subvolumes[0]) is not list:
+        raise Exception("Multiple subvolumes not submitted!")
+    
+    # add a check for duplicates.. 
+
+    n_init = []
+    
+    header = load_header(base_path, subvolumes[0])
+    
+    for subvolume in subvolumes: 
+        n_init.append(load_header(base_path, subvolume)[group]['N_this_z'][snap_num])
+        
+    # initialize objects structure
+    result = {}
+    
     with h5py.File(subvolume_path(base_path, subvolumes[0]), 'r') as f:
+        #header['Ngroups_Total_Redshift'] = f['Header']['Ngroups_Total_Redshift'][:]
 
-        header = dict(f['Header'].attrs.items())
-        header['redshifts'] = f['Header']['Redshifts'][:]
-
+        # galprop and haloprop both have a redshift quantity so we can use that to query for the snapshot we want
+        filter_field = group + 'Redshift'
+        
         if not fields:
             fields = list(f[group].keys())
 
+         # make sure the redshift field is included in fields
+        if filter_field not in fields:
+            fields.append(filter_field)   
+            
         for field in fields:
             if field not in f[group].keys():
                 raise Exception("Catalog does not have requested field [" + field + "]!")
-
+        
+            # allocate within return dict
+            result[field] = np.zeros(np.sum(n_init), dtype=f[group][field].dtype)
             # pop the exception?
 
-    # galprop and haloprop both have a redshift quantity so we can use that to query for the snapshot we want
-    filter_condition = header['redshifts'][snap_num]
-    filter_field = group + 'Redshift'
+    filter_condition = header['Redshifts'][snap_num]
 
-    # make sure the redshift field is included in fields
-    if filter_field not in fields:
-        fields.append(filter_field)
+    offset = 0
 
-    # initialize objects structure
-    object = {}
-
-    # either have to post-process SAM outputs to include a table of # of halos and # of subhalos per snapshot
-    # or can just begin with an empty list and append until ends
-    for field in fields:
-        object[field] = np.array([])
-
-    # rather than loop over all n^3 subvolumes, user submits list of subvolumes (i.e. [[0, 0, 0], [0, 0, 1]])
-    # that way it allows for usage of partial volumes if users want to download a specific subset of subvolumes
     for subvolume in subvolumes:
-        subvolume_object = load_subvolume_objects(base_path, subvolume, group, fields, True)
+        subvolume_result = load_subvolume_objects(base_path, subvolume, group, fields, False)
 
-        idx = subvolume_object[filter_field][:] == filter_condition
+        idx = subvolume_result[filter_field][:] == filter_condition
+        
         for field in fields:
-            object[field] = np.append(object[field], subvolume_object[field][idx])
+            result[field][offset:offset+n_init[0]] = subvolume_result[field][idx]
 
-    return object
+        offset += n_init[0]
+        del n_init[0]
+        
+    return result
 
 
 def load_haloprop(base_path, subvolume, fields=None):
@@ -119,7 +132,21 @@ def load_snap_subhalos(base_path, snap_num, subvolumes, fields=None):
 
 
 def load_header(base_path, subvolume):
-    return
+    """Returns the header from a queried subvolume."""
+    with h5py.File(subvolume_path(base_path, subvolume), 'r') as f:
+
+        header = dict(f['Header'].attrs.items())
+        header['Redshifts'] = f['Header']['Redshifts'][:]
+        header['Galprop'] = {
+            'N_total_z': f['Header']['Nsubgroups_Total_Redshift'][:],
+            'N_this_z': f['Header']['Nsubgroups_ThisFile_Redshift'][:]
+        }
+        header['Haloprop'] = {
+            'N_total_z': f['Header']['Ngroups_Total_Redshift'][:],
+            'N_this_z': f['Header']['Ngroups_ThisFile_Redshift'][:]
+        }
+        
+    return header
 
 
 def load_single(base_path, snap_num, subvolume, halo_id=-1, subhalo_id=-1):
