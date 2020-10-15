@@ -16,7 +16,7 @@ def subvolume_path(base_path, subvolume):
     return file_path
 
 
-def load_subvolume_objects(base_path, subvolume, group, fields, flag):
+def load_subvolume(base_path, subvolume, group, fields, flag):
     """Returns queried results for a specific subvolume
 
     Similar to loadObjects() from illustris_python, modified in that does not iterate over chunks and can return whole
@@ -46,7 +46,7 @@ def load_subvolume_objects(base_path, subvolume, group, fields, flag):
     return result
 
 
-def load_snap_objects(base_path, snap_num, subvolumes, group, fields=None):
+def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
     """Returns objects queried for all subvolumes
 
     :param base_path: base path to data repository
@@ -59,7 +59,8 @@ def load_snap_objects(base_path, snap_num, subvolumes, group, fields=None):
 
     if type(subvolumes[0]) is not list:
         raise Exception("Multiple subvolumes not submitted!")
-    
+        # then instead use single loader
+
     # add a check for duplicates.. 
 
     n_init = []
@@ -73,15 +74,13 @@ def load_snap_objects(base_path, snap_num, subvolumes, group, fields=None):
     result = {}
     
     with h5py.File(subvolume_path(base_path, subvolumes[0]), 'r') as f:
-        #header['Ngroups_Total_Redshift'] = f['Header']['Ngroups_Total_Redshift'][:]
-
         # galprop and haloprop both have a redshift quantity so we can use that to query for the snapshot we want
         filter_field = group + 'Redshift'
         
         if not fields:
             fields = list(f[group].keys())
 
-         # make sure the redshift field is included in fields
+        # make sure the redshift field is included in fields
         if filter_field not in fields:
             fields.append(filter_field)   
             
@@ -98,7 +97,7 @@ def load_snap_objects(base_path, snap_num, subvolumes, group, fields=None):
     offset = 0
 
     for subvolume in subvolumes:
-        subvolume_result = load_subvolume_objects(base_path, subvolume, group, fields, False)
+        subvolume_result = load_subvolume(base_path, subvolume, group, fields, False)
 
         idx = subvolume_result[filter_field][:] == filter_condition
         
@@ -113,22 +112,22 @@ def load_snap_objects(base_path, snap_num, subvolumes, group, fields=None):
 
 def load_haloprop(base_path, subvolume, fields=None):
     """Returns a specific subvolume's haloprop for all snapshots."""
-    return load_subvolume_objects(base_path, subvolume, 'Haloprop', fields, True)
+    return load_subvolume(base_path, subvolume, 'Haloprop', fields, True)
 
 
 def load_galprop(base_path, subvolume, fields=None):
     """Returns a specific subvolume's galprop for all snapshots."""
-    return load_subvolume_objects(base_path, subvolume, 'Galprop', fields, True)
+    return load_subvolume(base_path, subvolume, 'Galprop', fields, True)
 
 
-def load_snap_halos(base_path, snap_num, subvolumes, fields=None):
+def load_snapshot_halos(base_path, snap_num, subvolumes, fields=None):
     """Returns all halos from queried subvolumes at a specific snapshot."""
-    return load_snap_objects(base_path, snap_num, subvolumes, "Haloprop", fields)
+    return load_snapshot(base_path, snap_num, subvolumes, "Haloprop", fields)
 
 
-def load_snap_subhalos(base_path, snap_num, subvolumes, fields=None):
+def load_snapshot_subhalos(base_path, snap_num, subvolumes, fields=None):
     """Returns all subhalos from queried subvolumes at a specific snapshot."""
-    return load_snap_objects(base_path, snap_num, subvolumes, "Galprop", fields)
+    return load_snapshot(base_path, snap_num, subvolumes, "Galprop", fields)
 
 
 def load_header(base_path, subvolume):
