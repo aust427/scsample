@@ -55,19 +55,19 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
     :param fields: list of fields to query
     :return:
     """
+    subvolumes = [list(subvolume) for subvolume in set(tuple(subvolume) for subvolume in subvolumes)]
 
+    # easy to check on 1st item, might have to check all of them
+    if len(subvolumes) < 1:
+        raise Exception("Subvolumes is empty!")
     if type(subvolumes[0]) is not list:
-        raise Exception("Multiple subvolumes not submitted!")
-        # then instead use single loader
-
-    # add a check for duplicates.. 
+        raise Exception("Subvolume is not of correct format! (not a list)")
+    if len(subvolumes[0]) != 3:
+        raise Exception("Subvolume is not of correct length! (length != 3)")
 
     n_init = []
-    
-    header = load_header(base_path, subvolumes[0])
-    
-    snap_key = 'N%s_ThisFile_Redshift' % ('groups' if group is 'Haloprop' else 'subgroups')
 
+    snap_key = 'N%s_ThisFile_Redshift' % ('groups' if group is 'Haloprop' else 'subgroups')
     for subvolume in subvolumes: 
         n_init.append(load_header(base_path, subvolume)[snap_key][snap_num])
         
@@ -93,6 +93,7 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
             result[field] = np.zeros(np.sum(n_init), dtype=f[group][field].dtype)
             # pop the exception?
 
+    header = load_header(base_path, subvolumes[0])
     filter_condition = header['Redshifts'][snap_num]
 
     offset = 0
