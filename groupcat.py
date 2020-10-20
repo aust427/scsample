@@ -10,8 +10,7 @@ def subvolume_path(base_path, subvolume):
     :param subvolume: what subvolume to load
     :return: path to subvolume file
     """
-    catalog_path = base_path + '/%i_%i_%i/' % (subvolume[0], subvolume[1], subvolume[2])
-    file_path = catalog_path + 'subvolume.hdf5'
+    file_path = base_path + 'outputs/subvolume_%i_%i_%i.hdf5' % (subvolume[0], subvolume[1], subvolume[2])
 
     return file_path
 
@@ -67,8 +66,10 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
     
     header = load_header(base_path, subvolumes[0])
     
+    snap_key = 'N%s_ThisFile_Redshift' % ('groups' if group is 'Haloprop' else 'subgroups')
+
     for subvolume in subvolumes: 
-        n_init.append(load_header(base_path, subvolume)[group]['N_this_z'][snap_num])
+        n_init.append(load_header(base_path, subvolume)[snap_key][snap_num])
         
     # initialize objects structure
     result = {}
@@ -133,17 +134,8 @@ def load_snapshot_subhalos(base_path, snap_num, subvolumes, fields=None):
 def load_header(base_path, subvolume):
     """Returns the header from a queried subvolume."""
     with h5py.File(subvolume_path(base_path, subvolume), 'r') as f:
-
         header = dict(f['Header'].attrs.items())
-        header['Redshifts'] = f['Header']['Redshifts'][:]
-        header['Galprop'] = {
-            'N_total_z': f['Header']['Nsubgroups_Total_Redshift'][:],
-            'N_this_z': f['Header']['Nsubgroups_ThisFile_Redshift'][:]
-        }
-        header['Haloprop'] = {
-            'N_total_z': f['Header']['Ngroups_Total_Redshift'][:],
-            'N_this_z': f['Header']['Ngroups_ThisFile_Redshift'][:]
-        }
+        header.update({key: f['Header'][key][:] for key in f['Header'].keys()})
         
     return header
 
