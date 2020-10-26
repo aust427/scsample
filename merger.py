@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-import groupcat
+#import groupcat
 
 
 def load_roots(base_path):
@@ -20,7 +20,7 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
 
     loc = '000'
 
-    subvolume = groupcat.load_subvolume(base_path, [int(char) for char in loc], group, fields, True)
+    #subvolume = groupcat.load_subvolume(base_path, [int(char) for char in loc], group, fields, True)
 
     return 0
 

@@ -67,7 +67,7 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
 
     n_init = []
 
-    snap_key = 'N%s_ThisFile_Redshift' % ('groups' if group is 'Haloprop' else 'subgroups')
+    snap_key = 'N%s_ThisFile_Redshift' % ('groups' if group == 'Haloprop' else 'subgroups')
     for subvolume in subvolumes: 
         n_init.append(load_header(base_path, subvolume)[snap_key][snap_num])
         
@@ -88,10 +88,12 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
         for field in fields:
             if field not in f[group].keys():
                 raise Exception("Catalog does not have requested field [" + field + "]!")
-        
+
+            shape = list(f[group][field].shape)
+            shape[0] = np.sum(n_init)
+
             # allocate within return dict
-            result[field] = np.zeros(np.sum(n_init), dtype=f[group][field].dtype)
-            # pop the exception?
+            result[field] = np.zeros(shape, dtype=f[group][field].dtype)
 
     header = load_header(base_path, subvolumes[0])
     filter_condition = header['Redshifts'][snap_num]
@@ -104,7 +106,10 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
         idx = subvolume_result[filter_field][:] == filter_condition
         
         for field in fields:
-            result[field][offset:offset+n_init[0]] = subvolume_result[field][idx]
+            if len(subvolume_result[field].shape) != 1:
+                result[field][offset:offset+n_init[0], :] = subvolume_result[field][idx]
+            else:
+                result[field][offset:offset+n_init[0]] = subvolume_result[field][idx]
 
         offset += n_init[0]
         del n_init[0]
