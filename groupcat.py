@@ -55,7 +55,7 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
     :param fields: list of fields to query
     :return:
     """
-    subvolumes = [list(subvolume) for subvolume in set(tuple(subvolume) for subvolume in subvolumes)]
+    # subvolumes = [list(subvolume) for subvolume in set(tuple(subvolume) for subvolume in subvolumes)]
 
     # easy to check on 1st item, might have to check all of them
     if len(subvolumes) < 1:
