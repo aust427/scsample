@@ -5,16 +5,27 @@ from .groupcat import load_subvolume
 TREE_PATH = '/postprocessing/tree_offsets/'
 
 
-def find_most_massive(forest):
+def find_most_massive(forest, group):
+    most_massive_idx = []
+
     for tree in forest:
-        print(tree)
-    return 0
+        for z in np.sort(np.unique(forest[tree]['%sRedshift' % group])):
+            mvir_idx = np.flatnonzero(forest[tree]['%sRedshift' % group] == z)
+            most_massive_idx.append(mvir_idx[np.argmax(forest[tree]['%sMvir' % group][mvir_idx])])
+
+        for field in forest[tree].keys():
+            if len(forest[tree][field].shape) != 1:
+                forest[tree][field] = forest[tree][field][most_massive_idx, :]
+            else:
+                forest[tree][field] = forest[tree][field][most_massive_idx]
+
+    return forest
 
 
 def field_check(fields, group):
-    if (group + 'Mvir') not in fields:
+    if ('%sMvir' % group) not in fields:
         fields.append(group + 'Mvir')
-    if (group + 'Redshift') not in fields:
+    if ('%sRedshift' % group) not in fields:
         fields.append(group + 'Redshift')
     return fields
 
@@ -41,7 +52,7 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
 
     with h5py.File(base_path + TREE_PATH + 'offsets_%i_%i_%i.hdf5'
                    % tuple(tree_dict[halo_id]['Subvolume'][:]), 'r') as f:
-        offset = f['Offsets'][group + 'Offsets'][tree_dict[halo_id][group + 'Offsets']]
+        offset = f['Offsets']['%sOffsets' % group][tree_dict[halo_id]['%sOffsets' % group]]
         for field in fields:
             if len(result[field].shape) != 1:
                 result[field] = result[field][offset[0]:offset[1], :]
@@ -51,12 +62,12 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
     tree_result = {halo_id: result}
 
     if most_massive:
-        tree_result = find_most_massive(tree_result)
+        tree_result = find_most_massive(tree_result, group)
 
     return tree_result
 
 
-def load_tree_catalog(base_path, subvolume, halo_id, group, fields=None, most_massive=False):
+def load_tree_catalog(base_path, subvolume, group, fields=None, most_massive=False):
     return 0
 
 
