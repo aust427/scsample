@@ -10,7 +10,7 @@ def subvolume_path(base_path, subvolume):
     :param subvolume: what subvolume to load
     :return: path to subvolume file
     """
-    file_path = base_path + 'outputs/subvolume_%i_%i_%i.hdf5' % (subvolume[0], subvolume[1], subvolume[2])
+    file_path = base_path + 'outputs/subvolume_%i_%i_%i.hdf5' % tuple(subvolume)
 
     return file_path
 
@@ -35,7 +35,7 @@ def load_subvolume(base_path, subvolume, group, fields, flag):
 
         for field in fields:
             if field not in f[group].keys():
-                raise Exception("Catalog does not have requested field [" + field + "]!")
+                raise Exception("Catalog does not have requested field [%s]!" % field)
 
     result = {}
 
@@ -55,9 +55,6 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
     :param fields: list of fields to query
     :return:
     """
-    # subvolumes = [list(subvolume) for subvolume in set(tuple(subvolume) for subvolume in subvolumes)]
-
-    # easy to check on 1st item, might have to check all of them
     if len(subvolumes) < 1:
         raise Exception("Subvolumes is empty!")
     if type(subvolumes[0]) is not list:
@@ -76,7 +73,7 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
     
     with h5py.File(subvolume_path(base_path, subvolumes[0]), 'r') as f:
         # galprop and haloprop both have a redshift quantity so we can use that to query for the snapshot we want
-        filter_field = group + 'Redshift'
+        filter_field = '%sRedshift' % group
         
         if not fields:
             fields = list(f[group].keys())
@@ -87,7 +84,7 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields=None):
             
         for field in fields:
             if field not in f[group].keys():
-                raise Exception("Catalog does not have requested field [" + field + "]!")
+                raise Exception("Catalog does not have requested field [%s]!" % field)
 
             shape = list(f[group][field].shape)
             shape[0] = np.sum(n_init)
