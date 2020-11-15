@@ -64,7 +64,7 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
 
     with h5py.File('%s%s/offsets_lookup.hdf5' % (base_path, TREE_PATH), 'r') as f:
         tree_dict[halo_id] = {}
-        loc = np.where(f['Lookup_Table']['GalpropRootHaloID'][:] == halo_id)[0][0]
+        loc = np.where(f['Lookup_Table']['RootHaloID'][:] == halo_id)[0][0]
         tree_dict[halo_id]['Subvolume'] = f['Lookup_Table']['Subvolume'][loc]
         tree_dict[halo_id]['%sOffsets' % group] = f['Lookup_Table']['%sOffsets' % group][loc]
 
@@ -110,8 +110,10 @@ def load_forest(base_path, subvolumes, group, fields=None, most_massive=False):
         result = load_subvolume(base_path, subvolume, group, fields, True)
 
         with h5py.File('%s%s/offsets_lookup.hdf5' % (base_path, TREE_PATH), 'r') as f:
-            subvolume_offset = [0, 10] # with offset file, find the subvolume offset
-            trees = f['Lookup_Table']['GalpropRootHaloID'][subvolume_offset[0]:subvolume_offset[1]]
+            subvolume_loc = np.where((f['Lookup_Lookup']['Subvolume'][:] == subvolume).all(axis=1))[0][0]
+            subvolume_offset = f['Lookup_Lookup']['Offsets'][subvolume_loc]
+
+            trees = f['Lookup_Table']['RootHaloID'][subvolume_offset[0]:subvolume_offset[1]]
             offsets = f['Lookup_Table']['%sOffsets' % group][subvolume_offset[0]:subvolume_offset[1]]
 
             for i in range(0, len(trees)):
