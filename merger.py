@@ -12,9 +12,10 @@ def find_most_massive(forest, group):
     :param group: what group was queried from the hdf5 files
     :return:
     """
-    most_massive_idx = []
 
     for tree in forest:
+        most_massive_idx = []
+
         for z in np.sort(np.unique(forest[tree]['%sRedshift' % group])):
             mvir_idx = np.flatnonzero(forest[tree]['%sRedshift' % group] == z)
             most_massive_idx.append(mvir_idx[np.argmax(forest[tree]['%sMvir' % group][mvir_idx])])
@@ -64,8 +65,8 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
     with h5py.File('%s%s/offsets_lookup.hdf5' % (base_path, TREE_PATH), 'r') as f:
         tree_dict[halo_id] = {}
         loc = np.where(f['Lookup_Table']['GalpropRootHaloID'][:] == halo_id)[0][0]
-        for key in f['Lookup_Table']:
-            tree_dict[halo_id][key] = (f['Lookup_Table'][key][loc])
+        tree_dict[halo_id]['Subvolume'] = f['Lookup_Table']['Subvolume'][loc]
+        tree_dict[halo_id]['%sOffsets' % group] = f['Lookup_Table']['%sOffsets' % group][loc]
 
     result = load_subvolume(base_path, tree_dict[halo_id]['Subvolume'][:], group, fields, True)
 
@@ -90,7 +91,7 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
     return tree_result
 
 
-def load_tree_catalog(base_path, subvolumes, group, fields=None, most_massive=False):
+def load_forest(base_path, subvolumes, group, fields=None, most_massive=False):
     """Returns merger queried forest of merger trees from haloprop or galprop
 
     :param base_path: base path to data repository
@@ -108,6 +109,20 @@ def load_tree_catalog(base_path, subvolumes, group, fields=None, most_massive=Fa
     for subvolume in subvolumes:
         result = load_subvolume(base_path, subvolume, group, fields, True)
 
+        with h5py.File('%s%s/offsets_lookup.hdf5' % (base_path, TREE_PATH), 'r') as f:
+            subvolume_offset = [0, 10] # with offset file, find the subvolume offset
+            trees = f['Lookup_Table']['GalpropRootHaloID'][subvolume_offset[0]:subvolume_offset[1]]
+            offsets = f['Lookup_Table']['%sOffsets' % group][subvolume_offset[0]:subvolume_offset[1]]
+
+            for i in range(0, len(trees)):
+                forest_result[trees[i]] = {}
+
+                for field in result.keys():
+                    if len(result[field].shape) != 1:
+                        forest_result[trees[i]][field] = result[field][offsets[i][0]:offsets[i][1], :]
+                    else:
+                        forest_result[trees[i]][field] = result[field][offsets[i][0]:offsets[i][1]]
+
     if most_massive:
         forest_result = find_most_massive(forest_result, group)
 
@@ -124,11 +139,11 @@ def load_tree_haloprop(base_path, halo_id=-1, fields=None, most_massive=False):
     return load_tree(base_path, halo_id, 'Haloprop', fields, most_massive)
 
 
-def load_galprop_trees(base_path, subvolumes, fields=None, most_massive=False):
+def load_galprop_forest(base_path, subvolumes, fields=None, most_massive=False):
     """Returns all subhalo trees from queried subvolumes."""
-    return load_tree_catalog(base_path, subvolumes, 'Galprop', fields, most_massive)
+    return load_forest(base_path, subvolumes, 'Galprop', fields, most_massive)
 
 
-def load_haloprop_trees(base_path, subvolumes, fields=None, most_massive=False):
+def load_haloprop_forest(base_path, subvolumes, fields=None, most_massive=False):
     """Returns all halo trees from queried subvolumes."""
-    return load_tree_catalog(base_path, subvolumes, 'Haloprop', fields, most_massive)
+    return load_forest(base_path, subvolumes, 'Haloprop', fields, most_massive)
