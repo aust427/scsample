@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 from .groupcat import load_subvolume
 
-TREE_PATH = 'postprocessing/tree_offsets'
+OFFSET_PATH = 'postprocessing/tree_offsets/offsets_'
 
 
 def find_most_massive(forest, group):
@@ -60,28 +60,28 @@ def load_tree(base_path, halo_id, group, fields=None, most_massive=False):
     if fields is not None and most_massive:
         fields = field_check(fields, group)
 
-    tree_dict = {halo_id: {}}
+    tree_dict = {}
 
-    with h5py.File('%s%s/offsets_lookup.hdf5' % (base_path, TREE_PATH), 'r') as f:
+    with h5py.File('%s%slookup.hdf5' % (base_path, OFFSET_PATH), 'r') as f:
         tree_dict[halo_id] = {}
         loc = np.where(f['Lookup_Table']['RootHaloID'][:] == halo_id)[0][0]
-        tree_dict[halo_id]['Subvolume'] = f['Lookup_Table']['Subvolume'][loc]
-        tree_dict[halo_id]['%sOffsets' % group] = f['Lookup_Table']['%sOffsets' % group][loc]
+        tree_dict['Subvolume'] = f['Lookup_Table']['Subvolume'][loc]
+        tree_dict['%sOffsets' % group] = f['Lookup_Table']['%sOffsets' % group][loc]
 
-    result = load_subvolume(base_path, tree_dict[halo_id]['Subvolume'][:], group, fields, True)
+    result = load_subvolume(base_path, tree_dict['Subvolume'][:], group, fields, True)
 
     if fields is None:
         fields = result.keys()
 
     # load the offset file to do first round of index filtering
-    with h5py.File('%s%s%s' % (base_path, TREE_PATH, '/offsets_%i_%i_%i.hdf5'
-                                                     % tuple(tree_dict[halo_id]['Subvolume'][:])), 'r') as f:
-        offset = f['Offsets']['%sOffsets' % group][tree_dict[halo_id]['%sOffsets' % group]]
+    with h5py.File('%s%s%s' % (base_path, OFFSET_PATH, '%i_%i_%i.hdf5' % tuple(tree_dict['Subvolume'][:])), 'r') as f:
+        idx = f['Offsets']['%sOffsets' % group][list(tree_dict['%sOffsets' % group])]
+
         for field in fields:
             if len(result[field].shape) != 1:
-                result[field] = result[field][offset[0]:offset[1], :]
+                result[field] = result[field][idx[0]:idx[1], :]
             else:
-                result[field] = result[field][offset[0]:offset[1]]
+                result[field] = result[field][idx[0]:idx[1]]
 
     tree_result = {halo_id: result}
 
@@ -109,7 +109,8 @@ def load_forest(base_path, subvolumes, group, fields=None, most_massive=False):
     for subvolume in subvolumes:
         result = load_subvolume(base_path, subvolume, group, fields, True)
 
-        with h5py.File('%s%s/offsets_lookup.hdf5' % (base_path, TREE_PATH), 'r') as f:
+        with h5py.File('%s%slookup.hdf5' % (base_path, OFFSET_PATH), 'r') as f, \
+                h5py.File('%s%s%s' % (base_path, OFFSET_PATH, '%i_%i_%i.hdf5' % tuple(subvolume)), 'r') as g:
             subvolume_loc = np.where((f['Lookup_Lookup']['Subvolume'][:] == subvolume).all(axis=1))[0][0]
             subvolume_offset = f['Lookup_Lookup']['Offsets'][subvolume_loc]
 
@@ -118,12 +119,12 @@ def load_forest(base_path, subvolumes, group, fields=None, most_massive=False):
 
             for i in range(0, len(trees)):
                 forest_result[trees[i]] = {}
-
+                idx = g['Offsets']['%sOffsets' % group][offsets[i][0]:offsets[i][1]]
                 for field in result.keys():
                     if len(result[field].shape) != 1:
-                        forest_result[trees[i]][field] = result[field][offsets[i][0]:offsets[i][1], :]
+                        forest_result[trees[i]][field] = result[field][idx, :]
                     else:
-                        forest_result[trees[i]][field] = result[field][offsets[i][0]:offsets[i][1]]
+                        forest_result[trees[i]][field] = result[field][idx]
 
     if most_massive:
         forest_result = find_most_massive(forest_result, group)
