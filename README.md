@@ -4,16 +4,25 @@ Python module developed for loading and querying the Illustris-SAM catalogs. Hea
 ## Background
 The module is compatible with the following soon to be published datasets: 
 
-```
-Simulation   | n_subvolumes | Sizes (GB) | Snapshots | nhalos | nsubhalos 
-TNG100-1-SAM | 125          |            | 0 - 99    |        |
-TNG300-1-SAM | 343          |            | 1 - 99    |        |
-TNG50-1-SAM  | 216          |            | 0 - 99    |        |
-```
+| Simulation   | n_subvolumes | m_halo,min | Size (GB) | Snapshots | n_halos (z = 0) | n_subhalos (z = 0)| 
+|       ---    | ---          | ---        | ---       | ---       | ---             | ---               | 
+| TNG100-1-SAM | 125          |            |           | 0 - 99    |                 |                   |
+| TNG300-1-SAM | 343          |            |           | 1 - 99    |                 |                   |
+| TNG50-1-SAM  | 216          |            |           | 0 - 99    |                 |                   |  
 
-If using the above datasets, please cite ... For more information ... 
+
+If you would like to use the above datasets, please contact me for more information.
 
 ## Installing 
+The module is compatible with Python 3.6+. 
+
+To install, download the module into a folder, then add the following to the top of your script:
+
+```
+import site
+site.addsitedir('/path/to/illustris_sam/folder')
+import illustris_sam as ilsam 
+```
 
 
 ## Directory File Structure 
@@ -36,4 +45,4 @@ TNG-SAM/L75n1820TNG/output/
 	tree lookup file: TNG-SAM/L75n1820TNG/output/lookup/tree_lookup.hdf5
 ```
 	 
-From here, you would set basePathSAM = 'TNG-SAM/L75n1820TNG'. For more detailed instruction from here, please take a look at the provided Jupyter Notebook as an example of the capabilities of both the module and the catalog. 
+From here, you would set ```basePathSAM = 'TNG-SAM/L75n1820TNG'```. For more detailed instruction from here, please take a look at the provided Jupyter Notebook as an example of the capabilities of both the module and the catalogs. 
