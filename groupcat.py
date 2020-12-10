@@ -57,11 +57,11 @@ def load_subvolume(base_path, subvolume, group, fields, matches, flag):
                 if field not in f[group].keys():
                     raise Exception("Catalog does not have requested field [{}]!".format(field))
 
-        if matches:
-            result = {**result, **load_matches(base_path, subvolume, group)}
-
         for field in fields:
             result[field] = f[group][field][:]
+
+        if matches:
+            result = {**result, **load_matches(base_path, subvolume, group)}
 
     return result
 
@@ -107,6 +107,11 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches):
             # allocate within return dict
             result[field] = np.zeros(shape, dtype=f[group][field].dtype)
 
+    if matches:
+        with h5py.File(file_path(base_path, subvolumes[0], 'matches'), 'r') as f:
+            for field in f[group].keys():
+                result[field] = np.zeros(shape, dtype=f[group][field].dtype)
+
     header = load_header(base_path, subvolumes[0])
     filter_condition = header['Redshifts'][snap_num]
 
@@ -116,8 +121,8 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches):
         subvol_result = load_subvolume(base_path, subvolume, group, fields, matches, False)
 
         idx = subvol_result[filter_field][:] == filter_condition
-        
-        for field in fields:
+
+        for field in subvol_result.keys():
             if len(subvol_result[field].shape) != 1:
                 result[field][offset:offset+n_init[0], :] = subvol_result[field][idx]
             else:
