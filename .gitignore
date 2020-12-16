@@ -8,3 +8,4 @@
 __pycache__/__init__.cpython-38.pyc
 __pycache__/groupcat.cpython-38.pyc
 __pycache__/merger.cpython-38.pyc
+*.pyc
