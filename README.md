@@ -46,3 +46,9 @@ TNG-SAM/L75n1820TNG/output/
 ```
 	 
 From here, you would set ```basePathSAM = 'TNG-SAM/L75n1820TNG'```. For more detailed instruction from here, please take a look at the provided Jupyter Notebook as an example of the capabilities of both the module and the catalogs. 
+
+## Field Documentation
+Please consult [this Google Doc](https://drive.google.com/file/d/1cQGgqp6F-Y9RyYe6Z0Mn1E52np0UHGFk/view?usp=sharing "TNG SAM HDF5 Fields") for each catalog's field definitions and units.
+
+## Additional Fields
+Please contact me or Dr. Rachel Somerville if you would like to create additional fields to add to the catalog, such that we can provide you with a format guide on using your fields with this module.
