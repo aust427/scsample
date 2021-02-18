@@ -11,7 +11,7 @@ def file_path(base_path, subvolume, file_name):
     :param file_name:
     :return: path to file
     """
-    return '{}/output/{}_{}_{}/{}.hdf5'.format(base_path, *subvolume, file_name)
+    return '{}/{}_{}_{}/{}.hdf5'.format(base_path, *subvolume, file_name)
 
 
 def load_matches(base_path, subvolume, group):
