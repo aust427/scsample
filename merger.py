@@ -61,7 +61,7 @@ def load_tree(base_path, halo_id, group, fields, matches, most_massive):
 
     tree_dict = {}
 
-    with h5py.File('{}/output/lookup/tree_lookup.hdf5'.format(base_path), 'r') as f:
+    with h5py.File('{}/lookup/tree_lookup.hdf5'.format(base_path), 'r') as f:
         tree_dict[halo_id] = {}
         loc = np.where(f['Lookup_Table']['RootHaloID'][:] == halo_id)[0][0]
         tree_dict['Subvolume'] = f['Lookup_Table']['Subvolume'][loc]
@@ -106,7 +106,7 @@ def load_forest(base_path, subvolumes, group, fields, matches, most_massive):
 
     forest_result = {}
 
-    with h5py.File('{}/output/lookup/tree_lookup.hdf5'.format(base_path), 'r') as f:
+    with h5py.File('{}/lookup/tree_lookup.hdf5'.format(base_path), 'r') as f:
         for subvolume in subvolumes:
             result = load_subvolume(base_path, subvolume, group, fields, matches, True)
 
