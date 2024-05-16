@@ -33,6 +33,10 @@ def load_matches(base_path, subvolume, group):
     return result
 
 
+def load_photometry():
+    return result 
+
+
 def load_subvolume(base_path, subvolume, group, fields, matches, flag):
     """Returns queried results for a specific subvolume
 
