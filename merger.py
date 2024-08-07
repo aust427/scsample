@@ -14,8 +14,8 @@ def find_most_massive(forest, group):
     for tree in forest:
         most_massive_idx = []
 
-        for z in np.sort(np.unique(forest[tree]['%sRedshift' % group])):
-            mvir_idx = np.flatnonzero(forest[tree]['%sRedshift' % group] == z)
+        for snap in np.sort(np.unique(forest[tree]['%sSnapNum' % group]))[::-1]:
+            mvir_idx = np.flatnonzero(forest[tree]['%sSnapNum' % group] == snap)
             most_massive_idx.append(mvir_idx[np.argmax(forest[tree]['%sMvir' % group][mvir_idx])])
 
         for field in forest[tree].keys():
@@ -36,6 +36,8 @@ def field_check(fields, group):
     """
     if ('%sMvir' % group) not in fields:
         fields.append(group + 'Mvir')
+    if ('%sSnapNum' % group) not in fields:
+        fields.append(group + 'SnapNum')
     if ('%sRedshift' % group) not in fields:
         fields.append(group + 'Redshift')
     return fields
