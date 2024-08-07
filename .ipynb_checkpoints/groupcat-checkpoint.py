@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
 
+<<<<<<< Updated upstream
 
 def file_path(base_path, subvolume, file_name):
     """Returns the path to the subvolume hdf5 file
@@ -12,6 +13,9 @@ def file_path(base_path, subvolume, file_name):
     :return: path to file
     """
     return '{}/{}_{}_{}/{}.hdf5'.format(base_path, *subvolume, file_name)
+=======
+from .utility import load_header, file_path
+>>>>>>> Stashed changes
 
 
 def load_matches(base_path, subvolume, group):
@@ -130,9 +134,13 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches):
 
         offset += n_init[0]
         del n_init[0]
+<<<<<<< Updated upstream
         
     result['n_items'] = len(result[filter_field])
         
+=======
+                
+>>>>>>> Stashed changes
     return result
 
 
@@ -156,6 +164,7 @@ def load_snapshot_subhalos(base_path, snap_num, subvolumes, fields=None, matches
     return load_snapshot(base_path, snap_num, subvolumes, "Galprop", fields, matches)
 
 
+<<<<<<< Updated upstream
 def load_header(base_path, subvolume, file_name):
     """Returns the header from a queried subvolume."""
     with h5py.File(file_path(base_path, subvolume, file_name), 'r') as f:
@@ -163,3 +172,6 @@ def load_header(base_path, subvolume, file_name):
         header.update({key: f['Header'][key][:] for key in f['Header'].keys()})
         
     return header
+=======
+
+>>>>>>> Stashed changes
