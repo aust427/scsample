@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+from tqdm import tqdm 
 
 from .utility import load_header, file_path
 
@@ -56,7 +57,7 @@ def load_subvolume(base_path, subvolume, group, fields, matches, flag):
     return result
 
 
-def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches):
+def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches, verbose=True):
     """Returns objects queried for all subvolumes
 
     :param base_path: base path to data repository
@@ -107,7 +108,7 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches):
 
     offset = 0
 
-    for subvolume in subvolumes:
+    for subvolume in tqdm(subvolumes, disable = not verbose):
         subvol_result = load_subvolume(base_path, subvolume, group, fields, matches, False)
 
         idx = subvol_result[filter_field][:] == snap_num # filter_condition
@@ -124,24 +125,32 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields, matches):
     return result
 
 
-def load_haloprop(base_path, subvolume, fields=None, matches=False):
+def load_haloprop(base_path, subvolume, fields=None, matches=False, verbose=True):
     """Returns a specific subvolume's haloprop for all snapshots."""
     return load_subvolume(base_path, subvolume, 'Haloprop', fields, matches, True)
 
 
-def load_galprop(base_path, subvolume, fields=None, matches=False):
+def load_galprop(base_path, subvolume, fields=None, matches=False, verbose=True):
     """Returns a specific subvolume's galprop for all snapshots."""
     return load_subvolume(base_path, subvolume, 'Galprop', fields, matches, True)
 
     
+<<<<<<< Updated upstream
 def load_snapshot_halos(base_path, snap_num, subvolumes, fields=None, matches=False):
+=======
+def load_snapshot_halos(base_path, snap_num, subvolumes, fields=None, matches=False, verbose=True):
+>>>>>>> Stashed changes
     """Returns all halos from queried subvolumes at a specific snapshot."""
-    return load_snapshot(base_path, snap_num, subvolumes, "Haloprop", fields, matches)
+    return load_snapshot(base_path, snap_num, subvolumes, "Haloprop", fields, matches, verbose)
 
 
-def load_snapshot_subhalos(base_path, snap_num, subvolumes, fields=None, matches=False):
+def load_snapshot_subhalos(base_path, snap_num, subvolumes, fields=None, matches=False, verbose=True):
     """Returns all subhalos from queried subvolumes at a specific snapshot."""
-    return load_snapshot(base_path, snap_num, subvolumes, "Galprop", fields, matches)
+    return load_snapshot(base_path, snap_num, subvolumes, "Galprop", fields, matches, verbose)
 
 
 
+<<<<<<< Updated upstream
+
+=======
+>>>>>>> Stashed changes

@@ -1,5 +1,9 @@
 import h5py
 import numpy as np
+<<<<<<< Updated upstream
+=======
+from tqdm import tqdm 
+>>>>>>> Stashed changes
 
 from .groupcat import load_subvolume, file_path, load_galprop, load_snapshot_subhalos
 from .utility import load_header 
@@ -34,7 +38,11 @@ def load_subvolume(base_path, subvolume, group, fields, flag=False):
     return result
     
     
+<<<<<<< Updated upstream
 def load_snapshot(base_path, snap_num, subvolumes, group, fields, flag=False):
+=======
+def load_snapshot(base_path, snap_num, subvolumes, group, fields, flag=False, verbose=True):
+>>>>>>> Stashed changes
     n_init = []
 
     for subvolume in subvolumes: 
@@ -59,7 +67,11 @@ def load_snapshot(base_path, snap_num, subvolumes, group, fields, flag=False):
     
     offset = 0
 
+<<<<<<< Updated upstream
     for subvolume in subvolumes:
+=======
+    for subvolume in tqdm(subvolumes, disable = not verbose):
+>>>>>>> Stashed changes
         filter_fields = load_subvolume(base_path, subvolume, 'Linkprop', fields=None, flag=True)
         
         subvol_result = load_subvolume(base_path, subvolume, group, fields, flag=False)
@@ -99,10 +111,17 @@ def crossmatch_galprop(base_path, subvolume, galprop_fields=None):
     
     return galprop
 
+<<<<<<< Updated upstream
 def crossmatch_snapshot_galprop(base_path, snap_num, subvolume, galprop_fields=None):
     galprop_idx = load_snapshot_linkprop(base_path, snap_num, subvolume, 
                                 fields=['LinkproptoGalprop_Snapshot'])['LinkproptoGalprop_Snapshot']
     galprop = load_snapshot_subhalos(base_path, snap_num, subvolume, fields=galprop_fields)
+=======
+def crossmatch_snapshot_galprop(base_path, snap_num, subvolume, galprop_fields=None, verbose=True):
+    galprop_idx = load_snapshot_linkprop(base_path, snap_num, subvolume, 
+                                fields=['LinkproptoGalprop_Snapshot'])['LinkproptoGalprop_Snapshot']
+    galprop = load_snapshot_subhalos(base_path, snap_num, subvolume, fields=galprop_fields, verbose=verbose)
+>>>>>>> Stashed changes
     
     for key in galprop.keys(): 
         galprop[key] = galprop[key][galprop_idx]
