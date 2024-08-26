@@ -1,3 +1,3 @@
-__all__ = ["groupcat", "merger"]
+__all__ = ["groupcat", "merger", "histcat", "utility",]
 
 from . import *
