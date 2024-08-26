@@ -1,0 +1,3 @@
+# Packages required for basic usage of 'illustris_sam' package:
+numpy
+h5py
