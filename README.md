@@ -1,4 +1,4 @@
-# illustris_sam
+# scsample
 Python module developed for loading and querying the Illustris-SAM catalogs. Heavily inspired by the illustris-python module created by Dylan Nelson. Created by Austen Gabrielpillai. 
 
 ## Background
@@ -20,8 +20,8 @@ To install, download the module into a folder, then add the following to the top
 
 ```
 import site
-site.addsitedir('/path/to/illustris_sam/folder')
-import illustris_sam as ilsam 
+site.addsitedir('/path/to/scsample/folder')
+import scsample
 ```
 
 
